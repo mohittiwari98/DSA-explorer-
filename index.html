@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSA Explorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0d1b2a, #1b263b, #2a4d69);
+            color: #e0e7ff;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.pexels.com/photos/924824/pexels-photo-924824.jpeg') no-repeat center center/cover;
+            opacity: 0.3;
+            z-index: -1;
+            animation: twinkle 10s infinite alternate;
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 255, 204, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .glassmorphism::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(0, 255, 204, 0.1), rgba(255, 255, 255, 0.1));
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+        .topic, .faq-item {
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+            border: 1px solid rgba(0, 255, 204, 0.3);
+        }
+        .topic:hover, .faq-item:hover {
+            transform: translateY(-0.75rem) scale(1.02); /* Using rem for better responsiveness */
+            box-shadow: 0 0.9375rem 2.5rem rgba(0, 255, 204, 0.6); /* Using rem for better responsiveness */
+            border-color: #00ffcc;
+        }
+        .topic-image {
+            transition: transform 0.6s ease, opacity 0.6s ease;
+            filter: brightness(0.8);
+            border-radius: 0.75rem; /* Using rem for better responsiveness */
+            box-shadow: 0 0 0.625rem rgba(0, 255, 204, 0.3); /* Using rem for better responsiveness */
+            max-width: 100%; /* Make image responsive */
+            height: auto;
+        }
+        .topic:hover .topic-image {
+            transform: scale(1.15);
+            filter: brightness(1);
+        }
+        .details, .faq-answer {
+            transition: max-height 0.6s ease, opacity 0.6s ease, padding 0.6s ease;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .details.active, .faq-answer.active {
+            max-height: 62.5rem; /* Increased max-height for better content visibility */
+            opacity: 1;
+            padding-top: 1.5rem;
+        }
+        .dark-mode {
+            background: linear-gradient(135deg, #0a0e17, #1a1e2e, #2e3440);
+        }
+        .dark-mode .glassmorphism {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        ::-webkit-scrollbar {
+            width: 0.625rem; /* Using rem for better responsiveness */
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ffcc;
+            border-radius: 0.3125rem; /* Using rem for better responsiveness */
+            box-shadow: 0 0 0.625rem rgba(0, 255, 204, 0.5); /* Using rem for better responsiveness */
+        }
+        @keyframes slideIn {
+            from { transform: translateY(2.5rem); opacity: 0; } /* Using rem for better responsiveness */
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 0.3125rem #00ffcc, 0 0 0.625rem #00ffcc; } /* Using rem for better responsiveness */
+            50% { text-shadow: 0 0 0.9375rem #00ffcc, 0 0 1.5625rem #00ffcc; } /* Using rem for better responsiveness */
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.5; }
+        }
+        .animate-slide-in {
+            animation: slideIn 1s ease-out forwards;
+        }
+        .glow-text {
+            animation: glow 2s ease-in-out infinite;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .dark-toggle, .hamburger {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 0 0.9375rem rgba(0, 255, 204, 0.5); /* Using rem for better responsiveness */
+        }
+        .dark-toggle:hover, .hamburger:hover {
+            transform: scale(1.2);
+            background-color: #00ffcc;
+            color: #0d1b2a;
+        }
+        .video-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem; /* Using rem for better responsiveness */
+            padding: 0.5rem 1rem; /* Using rem for better responsiveness */
+            background: rgba(0, 255, 204, 0.2);
+            border: 1px solid #00ffcc;
+            border-radius: 0.5rem; /* Using rem for better responsiveness */
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        .video-link:hover {
+            background: rgba(0, 255, 204, 0.4);
+            transform: translateY(-0.125rem); /* Using rem for better responsiveness */
+        }
+        .mobile-nav {
+            transition: transform 0.5s ease;
+        }
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 70%; /* Adjust as needed for mobile view */
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 45; /* Ensure it's above the hamburger */
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            align-items: stretch; /* Make links fill the width */
+        }
+        .nav-links.active {
+            transform: translateX(0);
+        }
+        .nav-links a {
+            padding: 1rem 1.5rem; /* Using rem for better responsiveness */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+        .nav-links a:last-child {
+            border-bottom: none;
+        }
+
+        /* Media queries for larger screens */
+        @media (min-width: 769px) {
+            .nav-links {
+                flex-direction: row;
+                position: static;
+                width: auto;
+                height: auto;
+                background-color: transparent;
+                transform: translateX(0);
+                align-items: center;
+                justify-content: center;
+                space-x: 0.75rem; /* Using rem for better responsiveness */
+            }
+            .nav-links a {
+                display: block;
+                padding: 0.75rem 1.5rem; /* Using rem for better responsiveness */
+                background-color: transparent;
+                border-bottom: none;
+                border-radius: 0.5rem; /* Using rem for better responsiveness */
+                margin: 0;
+                text-align: center;
+            }
+            .nav-links a:hover {
+                background-color: rgba(0, 0, 0, 0.2);
+            }
+            .hamburger {
+                display: none;
+            }
+            #topics-container {
+                grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); /* Responsive grid */
+            }
+            .glow-text {
+                font-size: 3.75rem; /* Using rem for better responsiveness */
+            }
+        }
+
+        /* Further adjustments for smaller tablets */
+        @media (max-width: 640px) {
+            .glow-text {
+                font-size: 2.5rem; /* Adjust font size for smaller screens */
+            }
+        }
+
+        /* Adjustments for even smaller mobile screens */
+        @media (max-width: 480px) {
+            .glow-text {
+                font-size: 2rem;
+            }
+        }
+        .fas{
+            width: 40px;
+            padding-left: 10px;
+            margin-left: 5px;
+            border-left-width: 5px;
+            margin-top: 10px;
+            margin-bottom: 0px;
+            height: 35px;
+            padding-right: 10px;
+        }
+
+        #topics-container {
+            display: grid;
+            gap: 1.5rem; /* Using rem for better responsiveness */
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); /* Responsive grid */
+            padding: 1rem; /* Add some padding around the grid */
+        }
+
+        .topic {
+            padding: 1.5rem; /* Using rem for better responsiveness */
+        }
+
+        .faq-container {
+            display: grid;
+            gap: 1rem; /* Using rem for better responsiveness */
+        }
+
+        .faq-item {
+            padding: 1rem; /* Using rem for better responsiveness */
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <button class="fixed top-1rem right-1rem md:top-1.5rem md:right-1.5rem bg-cyan-400 text-gray-900 p-0.75rem md:p-1rem rounded-full shadow-xl hover:bg-cyan-500 transition-colors z-50 dark-toggle" onclick="toggleDarkMode()">
+        <i class="fas fa-moon text-lg md:text-xl"></i>
+    </button>
+    <button class="fixed top-1rem left-1rem md:hidden text-white text-2xl z-50 hamburger" onclick="toggleMobileNav()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <header class="glassmorphism py-2rem md:py-3rem text-center">
+        <h1 class="text-3xl md:text-5xl font-bold text-cyan-300 tracking-wide animate-slide-in glow-text">DSA Explorer</h1>
+        <p class="mt-1rem text-lg md:text-xl text-gray-200 animate-slide-in" style="animation-delay: 0.3s;">Your Cosmic Journey to Mastering Data Structures & Algorithms</p>
+    </header>
+
+    <nav class="glassmorphism py-1.5rem fixed top-0 left-0 w-full z-40 md:static md:bg-transparent nav-links">
+        <a href="#home" class="block px-1.5rem py-0.75rem text-base md:text-lg font-semibold text-white hover:text-cyan-300 transition-colors animate-slide-in md:bg-transparent bg-gray-900/80 md:rounded-none rounded-lg md:mx-0 mx-1rem" style="animation-delay: 0.1s;">Home</a>
+        <a href="#about" class="block px-1.5rem py-0.75rem text-base md:text-lg font-semibold text-white hover:text-cyan-300 transition-colors animate-slide-in md:bg-transparent bg-gray-900/80 md:rounded-none rounded-lg md:mx-0 mx-1rem" style="animation-delay: 0.2s;">About</a>
+        <a href="#resources" class="block px-1.5rem py-0.75rem text-base md:text-lg font-semibold text-white hover:text-cyan-300 transition-colors animate-slide-in md:bg-transparent bg-gray-900/80 md:rounded-none rounded-lg md:mx-0 mx-1rem" style="animation-delay: 0.3s;">Resources</a>
+        <a href="#faq" class="block px-1.5rem py-0.75rem text-base md:text-lg font-semibold text-white hover:text-cyan-300 transition-colors animate-slide-in md:bg-transparent bg-gray-900/80 md:rounded-none rounded-lg md:mx-0 mx-1rem" style="animation-delay: 0.4s;">FAQ</a>
+    </nav>
+
+    <section id="home" class="py-4rem px-1rem md:px-2rem max-w-7xl mx-auto mt-16 md:mt-0">
+        <h2 class="text-2xl md:text-3xl font-bold text-cyan-300 text-center mb-3rem animate-slide-in glow-text">Explore DSA Topics</h2>
+        <div id="topics-container" class="grid gap-2rem sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+
+    <section id="about" class="py-4rem px-1rem md:px-2rem bg-gray-900/30">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-2xl md:text-3xl font-bold text-cyan-300 mb-2rem animate-slide-in glow-text">About DSA Explorer</h2>
+            <p class="text-base md:text-lg text-gray-200 leading-relaxed mb-1.5rem animate-slide-in" style="animation-delay: 0.1s;">
+                Embark on a stellar journey with DSA Explorer, a platform crafted to illuminate the complexities of Data Structures and Algorithms. Our mission is to transform intricate concepts into captivating, accessible knowledge through vibrant explanations, interactive content, and curated cosmic resources.
+            </p>
+            <p class="text-base md:text-lg text-gray-200 leading-relaxed animate-slide-in" style="animation-delay: 0.2s;">
+                Whether you're navigating coding interviews, sharpening your problem-solving skills, or exploring the vast universe of algorithms, DSA Explorer offers structured learning paths. Dive into topics like Binary Search, Quick Sort, and beyond, with time complexities, pseudocode, and stellar video tutorials from trusted creators. Join our galactic community and unlock your
+            programming potential!
+            </p>
+        </div>
+    </section>
+
+    <section id="resources" class="py-4rem px-1rem md:px-2rem">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-2xl md:text-3xl font-bold text-cyan-300 mb-2rem animate-slide-in glow-text">Resources</h2>
+            <p class="text-base md:text-lg text-gray-200 leading-relaxed animate-slide-in" style="animation-delay: 0.1s;">
+                Explore a constellation of handpicked YouTube videos from renowned educators like Jenny's Lectures, Abdul Bari, and Gate Smashers. These resources are carefully curated to enhance your learning and provide deeper insights into the cosmos of DSA concepts.
+            </p>
+        </div>
+    </section>
+
+    <section id="faq" class="py-4rem px-1rem md:px-2rem bg-gray-900/30">
+        <div class="max-w-5xl mx-auto faq-container">
+            <h2 class="text-2xl md:text-3xl font-bold text-cyan-300 mb-2rem animate-slide-in glow-text">Frequently Asked Questions</h2>
+            <div class="faq-item glassmorphism p-1.25rem md:p-1.5rem rounded-2xl animate-slide-in" style="animation-delay: 0.1s;">
+                <h3 class="text-lg md:text-xl font-semibold text-cyan-300 cursor-pointer" onclick="toggleDetails(this.nextElementSibling)">
+                    What is DSA Explorer?
+                </h3>
+                <div class="faq-answer">
+                    <p class="mt-1rem text-gray-200 text-base md:text-lg">DSA Explorer is an educational platform designed to help you navigate and master Data Structures and Algorithms through detailed explanations, pseudocode, time complexities, and curated video resources.</p>
+                </div>
+            </div>
+            <div class="faq-item glassmorphism p-1.25rem md:p-1.5rem rounded-2xl animate-slide-in" style="animation-delay: 0.2s;">
+                <h3 class="text-lg md:text-xl font-semibold text-cyan-300 cursor-pointer" onclick="toggleDetails(this.nextElementSibling)">
+                    Who can benefit from this platform?
+                </h3>
+                <div class="faq-answer">
+                    <p class="mt-1rem text-gray-200 text-base md:text-lg">Students, coding bootcamp participants, self-learners, and professionals preparing for technical interviews can all benefit from DSA Explorer's comprehensive resources.</p>
+                </div>
+            </div>
+            <div class="faq-item glassmorphism p-1.25rem md:p-1.5rem rounded-2xl animate-slide-in" style="animation-delay: 0.3s;">
+                <h3 class="text-lg md:text-xl font-semibold text-cyan-300 cursor-pointer" onclick="toggleDetails(this.nextElementSibling)">
+                    Are the resources free to access?
+                </h3>
+                <div class="faq-answer">
+                    <p class="mt-1rem text-gray-200 text-base md:text-lg">Yes, all resources, including topic explanations and video links, are freely accessible to help you learn without barriers.</p>
+                </div>
+            </div>
+            <div class="faq-item glassmorphism p-1.25rem md:p-1.5rem rounded-2xl animate-slide-in" style="animation-delay: 0.4s;">
+                <h3 class="text-lg md:text-xl font-semibold text-cyan-300 cursor-pointer" onclick="toggleDetails(this.nextElementSibling)">
+                    How can I get support?
+                </h3>
+                <div class="faq-answer">
+                    <p class="mt-1rem text-gray-200 text-base md:text-lg">For any questions or support, reach out to us at <a href="mailto:support@dsaexplorer.com" class="text-cyan-300 hover:underline">support@dsaexplorer.com</a>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="glassmorphism py-2rem text-center">
+        <p class="text-gray-200 text-base md:text-lg animate-slide-in">&copy; 2025 DSA Explorer. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const topics = [
+            {
+                name: "Binary Search",
+                definition: "Efficient algorithm for finding an element in a sorted array.",
+                timeComplexity: "Time: O(log n), Space: O(1)",
+                pseudocode: `function binarySearch(arr, target):\n  low = 0\n  high = length(arr) - 1\n  while low <= high:\n    mid = (low + high) // 2\n    if arr[mid] == target:\n      return mid\n    else if arr[mid] < target:\n      low = mid + 1\n    else:\n      high = mid - 1\n  return -1`,
+                explanation: "Binary Search repeatedly divides the search interval in half.",
+                video: "https://youtube.com/watch?v=V_T5NuccwRA&si=V0ckzq2KDV4Og_2C",
+                image: "https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Greedy - Prim's Algorithm",
+                definition: "Finds Minimum Spanning Tree by adding the lowest weight edge.",
+                timeComplexity: "Time: O(E log V), Space: O(V)",
+                pseudocode: `function prim(graph):\n  start with arbitrary node\n  add smallest edge connecting to new node\n  repeat until all nodes are in MST`,
+                explanation: "Prim’s uses a priority queue to always expand the MST with the smallest edge.",
+                video: "https://youtu.be/_KX8GDvRzBc?si=xQMu4CALsFVRcqzA",
+                image: "https://images.pexels.com/photos/3861972/pexels-photo-3861972.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "DP - 0/1 Knapsack",
+                definition: "Select items to maximize value under a weight limit.",
+                timeComplexity: "Time: O(nW), Space: O(nW)",
+                pseudocode: `for i in 0..n:\n  for w in 0..W:\n    if item[i].weight <= w:\n      dp[i][w] = max(dp[i-1][w], dp[i-1][w-item[i].weight] + item[i].value)`,
+                explanation: "Dynamic Programming approach to solve binary decision problem.",
+                video: "https://youtu.be/nLmhmB6NzcM?si=XTcl42OlRRSdxaif",
+                image: "https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "DP - N-Queen",
+                definition: "Place N queens on an N×N board with no attacks.",
+                timeComplexity: "Time: O(N!), Space: O(N^2)",
+                pseudocode: `function solveNQueens(row):\n  if row == N: print board\n  for col in 0..N:\n    if safe(row, col):\n      place queen\n      solveNQueens(row + 1)\n      remove queen`,
+                explanation: "Backtracking recursively explores valid positions.",
+                video: "https://youtu.be/xFv_Hl4B83A?si=lao51ij7xfGmKyFL",
+                image: "https://images.pexels.com/photos/1632790/pexels-photo-1632790.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Bound - DFS",
+                definition: "Depth-first graph traversal using stack or recursion.",
+                timeComplexity: "Time: O(V+E), Space: O(V)",
+                pseudocode: `function DFS(node):\n  mark node visited\n  for each neighbor:\n    if not visited:\n      DFS(neighbor)`,
+                explanation: "DFS explores deep into one branch before backtracking.",
+                video: "https://youtu.be/pcKY4hjDrxk?si=q5TZ82-6j5IPneSy",
+                image: "https://miro.medium.com/v2/resize:fit:2000/1*fu9YTs_IF3-UPAPk7plEKw.jpeg"
+            },
+            {
+                name: "Merge Sort",
+                definition: "Divide and conquer algorithm to sort an array.",
+                timeComplexity: "Time: O(n log n), Space: O(n)",
+                pseudocode: `function mergeSort(arr):\n  if length(arr) <= 1: return arr\n  mid = len(arr) // 2\n  left = mergeSort(arr[:mid])\n  right = mergeSort(arr[mid:])\n  return merge(left, right)`,
+                explanation: "Merge Sort splits and merges sorted arrays recursively.",
+                video: "https://youtu.be/jlHkDBEumP0?si=1I8bYabGuHsoUiMG",
+                image: "https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Quick Sort",
+                definition: "Sorts an array using a pivot element recursively.",
+                timeComplexity: "Time: O(n log n), Space: O(log n)",
+                pseudocode: `function quickSort(arr):\n  if len(arr) <= 1: return arr\n  pivot = arr[0]\n  left = [x for x in arr[1:] if x < pivot]\n  right = [x for x in arr[1:] if x >= pivot]\n  return quickSort(left) + [pivot] + quickSort(right)`,
+                explanation: "Partitions around a pivot and sorts each half.",
+                video: "https://youtu.be/6vf8oTjpu_s?si=7zLZPwIsefH57Ssb",
+                image: "https://images.pexels.com/photos/1181359/pexels-photo-1181359.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Breadth-First Search (BFS)",
+                definition: "Graph traversal that visits all neighbors first.",
+                timeComplexity: "Time: O(V+E), Space: O(V)",
+                pseudocode: `function BFS(start):\n  create queue Q\n  mark start visited\n  enqueue start\n  while Q not empty:\n    node = dequeue\n    for each neighbor:\n      if not visited:\n        mark visited\n        enqueue neighbor`,
+                explanation: "BFS expands all nodes level by level using a queue.",
+                video: "https://youtu.be/pcKY4hjDrxk?si=S3I1c5pOXRTaFZHE",
+                image: "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Kruskal's Algorithm",
+                definition: "Finds Minimum Spanning Tree using a union-find data structure.",
+                timeComplexity: "Time: O(E log E), Space: O(V)",
+                pseudocode: `function kruskal(graph):\n  sort edges by weight\n  initialize disjoint sets\n  for each edge:\n    if adding the edge forms a cycle:\n      skip it\n    else:\n      add edge to MST`,
+                explanation: "Kruskal's algorithm sorts edges by weight and adds them to the MST using union-find.",
+                video: "https://youtu.be/huQojf2tevI?si=pwetYMqNrcoZNKrW",
+                image: "https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Dijkstra's Algorithm",
+                definition: "Finds the shortest path from a source node to all other nodes in a graph.",
+                timeComplexity: "Time: O(V^2), Space: O(V)",
+                pseudocode: `function dijkstra(graph, start):\n  initialize distances and priority queue\n  while priority queue not empty:\n    extract node with min distance\n    update neighbors' distances`,
+                explanation: "Dijkstra's algorithm uses a greedy approach to find the shortest path.",
+                video: "https://youtu.be/Gd92jSu_cZk?si=aW5aY83sHCnPMNHM",
+                image: "https://i.ytimg.com/vi/pSqmAO-m7Lk/sddefault.jpg"
+            },
+            {
+                name: "Matrix Chain Multiplication",
+                definition: "Finds the minimum number of scalar multiplications needed to multiply a chain of matrices.",
+                timeComplexity: "Time: O(n^3), Space: O(n^2)",
+                pseudocode: `function matrixChainOrder(p):\n  for length = 2 to n:\n    for i = 1 to n-length:\n      j = i + length - 1\n      compute the minimum cost for multiplying matrices`,
+                explanation: "Uses dynamic programming to optimize the matrix multiplication sequence.",
+                video: "https://youtu.be/OnuQ_7I6Ik0?si=rI1k9oHFbc1ZAOXF",
+                image: "https://images.pexels.com/photos/1181298/pexels-photo-1181298.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Bellman-Ford Algorithm",
+                definition: "Finds the shortest paths from a source node to all other nodes in a graph with negative weights.",
+                timeComplexity: "Time: O(VE), Space: O(V)",
+                pseudocode: `function bellmanFord(graph, start):\n  initialize distances\n  for each edge:\n    relax edges\n  check for negative weight cycles`,
+                explanation: "Bellman-Ford handles graphs with negative weight edges and detects negative weight cycles.",
+                video: "https://youtu.be/KudAWAMiQog?si=Mh97NHhGA9tN2AeQ",
+                image: "https://images.pexels.com/photos/3861964/pexels-photo-3861964.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Floyd-Warshall Algorithm",
+                definition: "Finds shortest paths between all pairs of nodes in a graph.",
+                timeComplexity: "Time: O(V^3), Space: O(V^2)",
+                pseudocode: `function floydWarshall(graph):\n  for each node k:\n    for each pair of nodes (i, j):\n      update shortest path between i and j`,
+                explanation: "Floyd-Warshall computes the shortest paths for all pairs of nodes in a graph.",
+                video: "https://youtu.be/pgNE06YbDZ8?si=FIN2eGIFFEnIYXDf",
+                image: "https://images.pexels.com/photos/3861943/pexels-photo-3861943.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Travelling Salesman Problem (TSP)",
+                definition: "Finds the shortest possible route that visits each node exactly once.",
+                timeComplexity: "Time: O(n!), Space: O(n)",
+                pseudocode: `function tsp(graph):\n  find all permutations of nodes\n  calculate the total distance for each permutation\n  return the shortest distance`,
+                explanation: "TSP is a classic NP-hard problem that can be solved using brute force or dynamic programming.",
+                video: "https://youtu.be/XaXsJJh-Q5Y?si=HIjrnndWdk3YlueZ",
+                image: "https://images.pexels.com/photos/3467157/pexels-photo-3467157.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "Graph Coloring",
+                definition: "Assigns colors to the vertices of a graph such that no two adjacent vertices have the same color.",
+                timeComplexity: "Time: O(V^2), Space: O(V)",
+                pseudocode: `function graphColoring(graph):\n  for each vertex:\n    assign a color that is different from adjacent vertices`,
+                explanation: "Graph Coloring is used in scheduling and map coloring problems.",
+                video: "https://youtu.be/052VkKhIaQ4?si=jlVHUQ-zkNslgwto",
+                image: "https://images.pexels.com/photos/3165335/pexels-photo-3165335.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            },
+            {
+                name: "15 Puzzle",
+                definition: "Solves the 15 puzzle using a sliding tile mechanism.",
+                timeComplexity: "Time: O(N^2), Space: O(N)",
+                pseudocode: `function solvePuzzle(board):\n  find the empty tile\n  move tiles to solve the puzzle`,
+                explanation: "The 15 puzzle involves moving tiles to arrange them in order.",
+                video: "https://youtu.be/l6bqjCDK3Kg?si=XvCDrCwoLgwChAL5",
+                image: "https://images.pexels.com/photos/277124/pexels-photo-277124.jpeg?auto=compress&cs=tinysrgb&w=300&h=150"
+            }
+        ];
+
+        const container = document.getElementById("topics-container");
+
+        topics.forEach((topic, index) => {
+            const div = document.createElement("div");
+            div.className = "topic glassmorphism p-1.5rem rounded-2xl animate-slide-in";
+            div.style.animationDelay = `${index * 0.15}s`;
+            div.innerHTML = `
+                <div class="relative overflow-hidden rounded-xl mb-1rem">
+                    <img src="${topic.image}" alt="${topic.name}" class="topic-image w-full h-36 md:h-48 object-cover" loading="lazy" onerror="this.src='https://images.pexels.com/photos/1181325/pexels-photo-1181325.jpeg?auto=compress&cs=tinysrgb&w=300&h=150';">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
+                </div>
+                <h2 class="text-lg md:text-xl font-semibold text-cyan-300 cursor-pointer" onclick="toggleDetails(this.nextElementSibling)">
+                    ${topic.name}
+                </h2>
+                <div class="details">
+                    <p class="mt-1rem text-base md:text-lg"><strong class="text-cyan-200">Definition:</strong> ${topic.definition}</p>
+                    <p class="mt-1rem text-base md:text-lg"><strong class="text-cyan-200">Complexity:</strong> ${topic.timeComplexity}</p>
+                    <p class="mt-1rem text-base md:text-lg"><strong class="text-cyan-200">Explanation:</strong> ${topic.explanation}</p>
+                    <pre class="bg-gray-800/80 p-1rem rounded-lg text-sm text-gray-200 my-0.75rem border border-cyan-500/30"><strong class="text-cyan-200">Pseudocode:</strong>\n${topic.pseudocode}</pre>
+                    <p><a href="${topic.video}" target="_blank" class="video-link text-cyan-300 text-base md:text-lg" onclick="validateVideoLink('${topic.video}', '${topic.name}')">Watch Video <i class="fas fa-external-link-alt"></i></a></p>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        function toggleDetails(element) {
+            element.classList.toggle("active");
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        function toggleMobileNav() {
+            const nav = document.querySelector('.nav-links');
+            nav.classList.toggle('active');
+        }
+
+        function validateVideoLink(url, topicName) {
+            console.log(`Validating video link for ${topicName}: ${url}`);
+            fetch(url, { method: 'HEAD', mode: 'no-cors' })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error(`Video link for ${topicName} failed with status: ${response.status || 'unknown'}`);
+                        alert(`The video for ${topicName} is unavailable. Please try again later or contact support@dsaexplorer.com.`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error validating video link for ${topicName}: ${error.message}`);
+                    alert(`The video for ${topicName} is unavailable. Please try again later or contact support@dsaexplorer.com.`);
+                });
+        }
+    </script>
+</body>
+</html>
